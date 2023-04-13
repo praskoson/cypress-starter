@@ -27,19 +27,37 @@ describe('RestaurantList', () => {
     expect(loadRestaurants).toHaveBeenCalled();
   });
 
-  it('displays the restaurants', () => {
-    renderComponent();
-    expect(screen.getByText('Sushi Place')).toBeInTheDocument();
-    expect(screen.getByText('Pizza Place')).toBeInTheDocument();
-  });
-
   it('displays the loading indicator while loading', () => {
     renderComponent({loading: true});
     expect(screen.getByRole('progressbar')).toBeInTheDocument();
   });
 
-  it('does not display the loading indicator while not loading', () => {
-    renderComponent({loading: false});
-    expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
+  describe('when loading succeeds', () => {
+    it('does not display the loading indicator while not loading', () => {
+      renderComponent({loading: false});
+      expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
+    });
+
+    it('displays the restaurants', () => {
+      renderComponent();
+      expect(screen.getByText('Sushi Place')).toBeInTheDocument();
+      expect(screen.getByText('Pizza Place')).toBeInTheDocument();
+    });
+
+    it('does not display the error message', () => {
+      renderComponent();
+      expect(
+        screen.queryByText('Restaurants could not be loaded.'),
+      ).not.toBeInTheDocument();
+    });
+  });
+
+  describe('when loading fails', () => {
+    it('displays the error message', () => {
+      renderComponent({loadError: true});
+      expect(
+        screen.getByText('Restaurants could not be loaded.'),
+      ).toBeInTheDocument();
+    });
   });
 });
