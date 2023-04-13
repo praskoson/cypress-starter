@@ -3,7 +3,7 @@ import RestaurantList from './RestaurantList';
 export default function RestaurantScreen() {
   return (
     <div>
-      <h1>Restauratnts</h1>
+      <h1>Restaurants</h1>
       <RestaurantList />
     </div>
   );
