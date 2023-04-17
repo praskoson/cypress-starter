@@ -1,18 +1,29 @@
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
+import Alert from '@mui/material/Alert';
 import {useState} from 'react';
 import {connect} from 'react-redux';
 import {createRestaurant} from '../store/restaurants/actions';
 
 export function NewRestaurantForm({createRestaurant}) {
   const [name, setName] = useState('');
-  function handleSubmit(e) {
+  const [validationError, setValidationError] = useState(false);
+  async function handleSubmit(e) {
     e.preventDefault();
-    createRestaurant(name);
+
+    if (name) {
+      setValidationError(false);
+      await createRestaurant(name);
+    } else {
+      setValidationError(true);
+    }
+
+    setName('');
   }
 
   return (
     <form onSubmit={handleSubmit}>
+      {validationError && <Alert severity="error">Name is required</Alert>}
       <TextField
         value={name}
         onChange={e => setName(e.target.value)}
