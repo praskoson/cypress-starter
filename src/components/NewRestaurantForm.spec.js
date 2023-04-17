@@ -6,6 +6,7 @@ import {NewRestaurantForm} from './NewRestaurantForm';
 describe('NewRestaurantForm', () => {
   const restaurantName = 'Sushi Place';
   const requiredError = 'Name is required';
+  const serverError = 'The restaurant could not be saved. Please try again.';
 
   let createRestaurant;
 
@@ -18,6 +19,10 @@ describe('NewRestaurantForm', () => {
     it('does not display a validation error', () => {
       renderComponent();
       expect(screen.queryByText(requiredError)).not.toBeInTheDocument();
+    });
+    it('does not display a server error', () => {
+      renderComponent();
+      expect(screen.queryByText(serverError)).not.toBeInTheDocument();
     });
   });
 
@@ -47,6 +52,11 @@ describe('NewRestaurantForm', () => {
     it('does not display a validation error', async () => {
       await fillInForm();
       expect(screen.queryByText(requiredError)).not.toBeInTheDocument();
+    });
+
+    it('does not display a server error', async () => {
+      await fillInForm();
+      expect(screen.queryByText(serverError)).not.toBeInTheDocument();
     });
   });
 
@@ -89,6 +99,54 @@ describe('NewRestaurantForm', () => {
     it('clears the validation error', async () => {
       await fixValidationError();
       expect(screen.queryByText(requiredError)).not.toBeInTheDocument();
+    });
+  });
+
+  describe('when the store action rejects', () => {
+    async function fillInForm() {
+      renderComponent();
+      createRestaurant.mockRejectedValue();
+
+      await userEvent.type(
+        screen.getByPlaceholderText('Add Restaurant'),
+        restaurantName,
+      );
+      userEvent.click(screen.getByText('Add'));
+
+      return act(flushPromises);
+    }
+
+    it('displays a server error', async () => {
+      await fillInForm();
+      expect(screen.getByText(serverError)).toBeInTheDocument();
+    });
+    it('does not clear the name', async () => {
+      await fillInForm();
+      expect(screen.getByPlaceholderText('Add Restaurant').value).toEqual(
+        restaurantName,
+      );
+    });
+  });
+
+  describe('when retrying after a server error', () => {
+    async function retrySubmittingForm() {
+      renderComponent();
+      createRestaurant.mockRejectedValueOnce().mockResolvedValueOnce();
+
+      await userEvent.type(
+        screen.getByPlaceholderText('Add Restaurant'),
+        restaurantName,
+      );
+      userEvent.click(screen.getByText('Add'));
+      await act(flushPromises);
+      userEvent.click(screen.getByText('Add'));
+
+      return act(flushPromises);
+    }
+
+    it('clears the server error', async () => {
+      await retrySubmittingForm();
+      expect(screen.queryByText(serverError)).not.toBeInTheDocument();
     });
   });
 });
